@@ -10,6 +10,9 @@ use clap::{CommandFactory, Parser, ValueEnum, ValueHint};
 use clap_complete::Shell;
 use color_eyre::eyre::{Ok, Result};
 use license_fetcher::read_package_list_from_out_dir;
+use logging::setup_logging;
+
+mod logging;
 
 /// An easy and secure staggered file backup solution
 #[derive(Parser, Debug)]
@@ -65,6 +68,10 @@ fn main() -> Result<()> {
         clap_complete::generate(shell, &mut command, command_name, &mut std::io::stdout());
         return Ok(());
     }
+
+    setup_logging()?;
+
+    log::info!("Hello World!");
 
     Ok(())
 }
