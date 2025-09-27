@@ -40,7 +40,7 @@ fn date_string_from_seconds(time_in_seconds: i64) -> Result<String> {
     Ok(date.format("%F").to_string())
 }
 
-fn modified_date_string_from_path<P>(file_path: P) -> Result<String>
+pub fn modified_date_string_from_path<P>(file_path: P) -> Result<String>
 where
     P: AsRef<Path>,
 {

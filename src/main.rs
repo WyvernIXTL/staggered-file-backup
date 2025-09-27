@@ -9,7 +9,9 @@ use std::{path::PathBuf, str::FromStr};
 use clap::{CommandFactory, Parser, ValueEnum, ValueHint};
 use clap_complete::Shell;
 use color_eyre::eyre::{Ok, Result};
+use file::modified_date_string_from_path;
 use license_fetcher::read_package_list_from_out_dir;
+use log::info;
 use logging::setup_logging;
 
 mod file;
@@ -96,9 +98,17 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    setup_logging()?;
+    if let Some(source_path) = cli.source {
+        setup_logging()?;
 
-    log::info!("Hello World!");
+        info!("Reading modification date of source file.");
+        let modified_string = modified_date_string_from_path(source_path)?;
+        info!("Source file last modified: {}", &modified_string);
+
+        return Ok(());
+    }
+
+    Cli::command().print_help()?;
 
     Ok(())
 }
