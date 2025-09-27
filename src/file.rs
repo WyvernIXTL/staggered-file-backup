@@ -9,9 +9,10 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
+use chrono::DateTime;
 use color_eyre::{
     Section,
-    eyre::{Context, Result},
+    eyre::{Context, ContextCompat, Result},
 };
 
 fn modified_date<P>(file_path: P) -> Result<SystemTime>
@@ -30,4 +31,21 @@ fn unix_from_system_time(time: SystemTime) -> Result<Duration> {
     time.duration_since(UNIX_EPOCH)
         .wrap_err("Failed converting system time to unix time.")
         .note("This should never happen D:")
+}
+
+fn date_string_from_seconds(time_in_seconds: i64) -> Result<String> {
+    let date = DateTime::from_timestamp_secs(time_in_seconds)
+        .wrap_err("Failed to parse date in seconds to date time.")?;
+
+    Ok(date.format("%F").to_string())
+}
+
+fn modified_date_string_from_path<P>(file_path: P) -> Result<String>
+where
+    P: AsRef<Path>,
+{
+    let modified = modified_date(file_path)?;
+    let duration = unix_from_system_time(modified)?;
+    let seconds = i64::try_from(duration.as_secs())?;
+    date_string_from_seconds(seconds)
 }
