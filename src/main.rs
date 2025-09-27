@@ -4,23 +4,33 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use std::{ffi::OsString, path::PathBuf, str::FromStr};
+use std::{ffi::OsString, fs::write, path::PathBuf, process::exit, str::FromStr};
 
 use clap::{CommandFactory, Parser, ValueEnum, ValueHint};
 use clap_complete::Shell;
-use color_eyre::eyre::{ContextCompat, Ok, Result};
+use color_eyre::{
+    Section,
+    eyre::{Context, ContextCompat, Ok, Result},
+};
 use file::modified_date_string_from_path;
 use license_fetcher::read_package_list_from_out_dir;
-use log::{info, warn};
-use logging::setup_logging;
+use log::{error, info, warn};
+
+use crate::{
+    hash::{generate_sha256_file_content, hash_file},
+    logging::setup_logging,
+    setup::setup_hooks,
+};
 
 mod file;
+mod hash;
 mod logging;
+mod setup;
 
 fn parse_str_to_source_pathbuf(s: &str) -> std::result::Result<PathBuf, String> {
     match PathBuf::from_str(s) {
         std::result::Result::Ok(path_buf) => {
-            if path_buf.is_file() && path_buf.exists() {
+            if path_buf.is_file() && path_buf.try_exists().map_err(|err| err.to_string())? {
                 std::result::Result::Ok(path_buf)
             } else {
                 Err("Source is not a file".to_owned())
@@ -33,7 +43,7 @@ fn parse_str_to_source_pathbuf(s: &str) -> std::result::Result<PathBuf, String> 
 fn parse_str_to_target_pathbuf(s: &str) -> std::result::Result<PathBuf, String> {
     match PathBuf::from_str(s) {
         std::result::Result::Ok(path_buf) => {
-            if path_buf.is_dir() {
+            if path_buf.is_dir() && path_buf.try_exists().map_err(|err| err.to_string())? {
                 std::result::Result::Ok(path_buf)
             } else {
                 Err("Target folder path is not a directory".to_owned())
@@ -73,7 +83,8 @@ struct Cli {
 }
 
 fn main() -> Result<()> {
-    color_eyre::install()?;
+    setup_hooks()?;
+    setup_logging()?;
 
     let cli = Cli::parse();
 
@@ -99,8 +110,6 @@ fn main() -> Result<()> {
     }
 
     if let (Some(source_path), Some(target_dir_path)) = (cli.source, cli.target) {
-        setup_logging()?;
-
         info!("Source file path: {}", source_path.display());
 
         let source_basename = source_path
@@ -116,8 +125,12 @@ fn main() -> Result<()> {
         }
 
         info!("Reading modification date of source file.");
-        let modified_string = modified_date_string_from_path(source_path)?;
+        let modified_string = modified_date_string_from_path(&source_path)?;
         info!("Source file last modified: {}", &modified_string);
+
+        info!("Hashing source file.");
+        let source_hash = hash_file(&source_path)?;
+        info!("Source file sh256: {}", &source_hash);
 
         info!("Target directory: {}", target_dir_path.display());
 
@@ -132,8 +145,46 @@ fn main() -> Result<()> {
 
         info!("Target file: {}", target_file.display());
 
-        let target_file_path = target_dir_path.join(target_file);
+        let target_file_path = target_dir_path.join(&target_file);
         info!("Target file path: {}", target_file_path.display());
+
+        info!(
+            "Copying file '{}' to '{}'",
+            source_path.display(),
+            target_file_path.display()
+        );
+
+        std::fs::copy(source_path, &target_file_path)
+            .wrap_err("Failed to copy source file to target dir.")
+            .suggestion(
+                "Check if the target dir exists and if you have permissions to access it.",
+            )?;
+
+        info!("Finished copying.");
+
+        info!("Hashing target file.");
+        let target_hash = hash_file(&target_file_path)?;
+        info!("Target file sh256: {}", &target_hash);
+
+        if target_hash == source_hash {
+            info!("Target and source file hash are equal.");
+        } else {
+            error!("Target and source file hash are NOT equal! Exiting...");
+            exit(1);
+        }
+
+        let mut hash_file_name = OsString::from(&target_file);
+        hash_file_name.push(".sha256");
+        let hash_file_path = target_dir_path.join(hash_file_name);
+
+        info!("Write hash to file: {}", hash_file_path.display());
+
+        write(
+            hash_file_path,
+            generate_sha256_file_content(source_hash, target_file.to_string_lossy()),
+        )
+        .wrap_err("Failed to write hash file.")?;
+        info!("Write success!");
 
         return Ok(());
     }
