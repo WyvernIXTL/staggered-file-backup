@@ -67,6 +67,34 @@ struct Cli {
     #[arg(value_name = "TARGET_FOLDER", value_hint = ValueHint::DirPath, value_parser = parse_str_to_target_pathbuf)]
     target: Option<PathBuf>,
 
+    /// Set retention period for the newest backups.
+    ///
+    /// Setting the retention to n implies that the last n backups are kept regardless.
+    /// A value of -1 implies no cleanup.
+    #[arg(short = 'n', long = "keep-newest", default_value_t = 8, value_parser = clap::value_parser!(i32).range(-1..))]
+    keep_newest_count: i32,
+
+    /// Set retention period for the daily backups.
+    ///
+    /// Setting the retention to n implies that the last n daily backups are kept.
+    /// A value of -1 implies no cleanup.
+    #[arg(short = 'd', long = "keep-daily", default_value_t = 32, value_parser = clap::value_parser!(i32).range(-1..))]
+    keep_daily_count: i32,
+
+    /// Set retention period for the monthly backups.
+    ///
+    /// Setting the retention to n implies that the last n monthly backups are kept.
+    /// A value of -1 implies no cleanup.
+    #[arg(short = 'm', long = "keep-monthly", default_value_t = 12, value_parser = clap::value_parser!(i32).range(-1..))]
+    keep_monthly_count: i32,
+
+    /// Set retention period for the yearly backups.
+    ///
+    /// Setting the retention to n implies that the last n yearly backups are kept.
+    /// A value of -1 implies no cleanup.
+    #[arg(short = 'y', long = "keep-yearly", default_value_t = -1, value_parser = clap::value_parser!(i32).range(-1..))]
+    keep_yearly_count: i32,
+
     /// Print licenses
     ///
     /// Print licenses of this project and all its dependencies
