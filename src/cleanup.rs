@@ -4,9 +4,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use std::{cmp::Ordering, path::PathBuf};
+use std::{cmp::Ordering, collections::HashMap, path::PathBuf};
 
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{Ok, Result};
+use log::warn;
 
 type Entry = ((u32, u32, u32), PathBuf);
 
@@ -27,6 +28,11 @@ fn identify_files_to_keep(
     keep_monthly: Option<u32>,
     keep_yearly: Option<u32>,
 ) -> Result<Vec<((u32, u32, u32), PathBuf)>> {
+    if file_list.is_empty() {
+        warn!("No files are backed up! Cleanup skipped.");
+        return Ok(vec![]);
+    }
+
     let mut file_list = file_list.clone();
     file_list.sort_by(compare_entries);
     let file_list = file_list;
@@ -37,6 +43,26 @@ fn identify_files_to_keep(
         let keep_latest = usize::try_from(keep_latest)?;
         let start_index = file_list.len() - keep_latest;
         keep.extend_from_slice(&file_list[start_index..]);
+    }
+
+    if let Some(keep_daily) = keep_daily {
+        let mut filtered = vec![];
+        filtered.push(file_list.first().unwrap());
+        for file in file_list.iter() {
+            if filtered.last().unwrap().0 != file.0 {
+                filtered.push(file);
+            }
+        }
+
+        let mut count = 0;
+        while let Some(file) = filtered.pop() {
+            if count == keep_daily {
+                break;
+            }
+
+            keep.push(file.clone());
+            count += 1;
+        }
     }
 
     todo!()
