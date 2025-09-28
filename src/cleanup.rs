@@ -69,7 +69,7 @@ fn identify_files_to_keep(
         let mut filtered = vec![];
         filtered.push(file_list.first().unwrap());
         for file in file_list.iter() {
-            if filtered.last().unwrap().0.1 != file.0.1 || filtered.last().unwrap().0.2 != file.0.2
+            if filtered.last().unwrap().0.0 != file.0.0 || filtered.last().unwrap().0.1 != file.0.1
             {
                 filtered.push(file);
             }
@@ -90,7 +90,7 @@ fn identify_files_to_keep(
         let mut filtered = vec![];
         filtered.push(file_list.first().unwrap());
         for file in file_list.iter() {
-            if filtered.last().unwrap().0.1 != file.0.1 {
+            if filtered.last().unwrap().0.0 != file.0.0 {
                 filtered.push(file);
             }
         }
@@ -141,6 +141,98 @@ mod test {
                 ((2025, 8, 1), path.clone()),
                 ((2025, 8, 2), path.clone()),
                 ((2025, 9, 1), path.clone()),
+            ]
+        )
+    }
+
+    #[test]
+    fn test_files_to_keep_latest() {
+        let files = vec![
+            ((2025, 08, 01), PathBuf::from("a")),
+            ((2025, 09, 01), PathBuf::from("b")),
+            ((2025, 10, 01), PathBuf::from("c")),
+            ((2025, 10, 02), PathBuf::from("e")),
+            ((2025, 10, 01), PathBuf::from("d")),
+            ((2025, 09, 02), PathBuf::from("f")),
+            ((2023, 08, 01), PathBuf::from("g")),
+            ((2025, 08, 02), PathBuf::from("h")),
+        ];
+
+        assert_eq!(
+            identify_files_to_keep(&files, Some(3), None, None, None).unwrap(),
+            vec![
+                ((2025, 10, 01), PathBuf::from("c")),
+                ((2025, 10, 01), PathBuf::from("d")),
+                ((2025, 10, 02), PathBuf::from("e"))
+            ]
+        )
+    }
+
+    #[test]
+    fn test_files_to_keep_daily() {
+        let files = vec![
+            ((2025, 08, 01), PathBuf::from("a")),
+            ((2025, 09, 01), PathBuf::from("b")),
+            ((2025, 10, 01), PathBuf::from("c")),
+            ((2025, 10, 02), PathBuf::from("e")),
+            ((2025, 10, 01), PathBuf::from("d")),
+            ((2025, 09, 02), PathBuf::from("f")),
+            ((2023, 08, 01), PathBuf::from("g")),
+            ((2025, 08, 02), PathBuf::from("h")),
+        ];
+
+        assert_eq!(
+            identify_files_to_keep(&files, None, Some(4), None, None).unwrap(),
+            vec![
+                ((2025, 09, 01), PathBuf::from("b")),
+                ((2025, 09, 02), PathBuf::from("f")),
+                ((2025, 10, 01), PathBuf::from("c")),
+                ((2025, 10, 02), PathBuf::from("e"))
+            ]
+        )
+    }
+
+    #[test]
+    fn test_files_to_keep_monthly() {
+        let files = vec![
+            ((2025, 08, 01), PathBuf::from("a")),
+            ((2025, 09, 01), PathBuf::from("b")),
+            ((2025, 10, 01), PathBuf::from("c")),
+            ((2025, 10, 02), PathBuf::from("e")),
+            ((2025, 10, 01), PathBuf::from("d")),
+            ((2025, 09, 02), PathBuf::from("f")),
+            ((2023, 08, 01), PathBuf::from("g")),
+            ((2025, 08, 02), PathBuf::from("h")),
+        ];
+
+        assert_eq!(
+            identify_files_to_keep(&files, None, None, Some(3), None).unwrap(),
+            vec![
+                ((2025, 08, 01), PathBuf::from("a")),
+                ((2025, 09, 01), PathBuf::from("b")),
+                ((2025, 10, 01), PathBuf::from("c")),
+            ]
+        )
+    }
+
+    #[test]
+    fn test_files_to_keep_yearly() {
+        let files = vec![
+            ((2025, 08, 01), PathBuf::from("a")),
+            ((2025, 09, 01), PathBuf::from("b")),
+            ((2025, 10, 01), PathBuf::from("c")),
+            ((2025, 10, 02), PathBuf::from("e")),
+            ((2025, 10, 01), PathBuf::from("d")),
+            ((2025, 09, 02), PathBuf::from("f")),
+            ((2023, 08, 01), PathBuf::from("g")),
+            ((2025, 08, 02), PathBuf::from("h")),
+        ];
+
+        assert_eq!(
+            identify_files_to_keep(&files, None, None, None, Some(2)).unwrap(),
+            vec![
+                ((2023, 08, 01), PathBuf::from("g")),
+                ((2025, 08, 01), PathBuf::from("a")),
             ]
         )
     }
