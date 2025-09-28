@@ -25,6 +25,7 @@ use crate::{
 mod file;
 mod hash;
 mod logging;
+mod parsing;
 mod setup;
 
 fn parse_str_to_source_pathbuf(s: &str) -> std::result::Result<PathBuf, String> {
