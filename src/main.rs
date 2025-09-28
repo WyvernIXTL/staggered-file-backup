@@ -225,8 +225,8 @@ fn main() -> Result<()> {
         info!("Determine which files to keep...");
 
         let parse_cli_keep_count = |count: i32| -> Result<Option<u32>> {
-            if cli.keep_newest_count >= 0 {
-                Ok(Some(u32::try_from(cli.keep_newest_count)?))
+            if count >= 0 {
+                Ok(Some(u32::try_from(count)?))
             } else {
                 Ok(None)
             }
@@ -243,17 +243,17 @@ fn main() -> Result<()> {
 
         backup_files_to_keep
             .iter()
-            .for_each(|file| info!("KEEP: {}", file.1.display()));
+            .for_each(|file| info!("KEEP: {}", file.path.display()));
 
         info!("Determine which files to move into recycle bin...");
         let files_to_trash = identify_files_to_delete(backup_files, &backup_files_to_keep);
 
         files_to_trash
             .iter()
-            .for_each(|file| info!("TRASH: {}", file.1.display()));
+            .for_each(|file| info!("TRASH: {}", file.path.display()));
 
         let files_to_trash_count = files_to_trash.len();
-        let files_to_trash_paths = files_to_trash.into_iter().map(|file| file.1);
+        let files_to_trash_paths = files_to_trash.into_iter().map(|file| file.path);
 
         if files_to_trash_count > 0 {
             info!("Moving files into recycle bin...");
