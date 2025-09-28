@@ -77,7 +77,7 @@ fn metadata_from_file_name(file_name: impl AsRef<OsStr>) -> Option<FileNameMetad
     })
 }
 
-fn date_from_path(file_path: impl AsRef<Path>) -> Result<FileNameMetadata> {
+fn metadata_from_path(file_path: impl AsRef<Path>) -> Result<FileNameMetadata> {
     ensure!(
         file_path.as_ref().is_file(),
         "Path given to be parsed is not a file."
@@ -91,7 +91,7 @@ fn date_from_path(file_path: impl AsRef<Path>) -> Result<FileNameMetadata> {
     metadata_from_file_name(file_name).wrap_err("Failed parsing file name to date.")
 }
 
-pub fn dates_from_directory(dir_path: impl AsRef<Path>) -> Result<Vec<BackupFile>> {
+pub fn metadata_from_directory(dir_path: impl AsRef<Path>) -> Result<Vec<BackupFile>> {
     Ok(std::fs::read_dir(dir_path.as_ref())?
         .filter_map(|dir_entry_result| {
             dir_entry_result
@@ -120,8 +120,10 @@ pub fn dates_from_directory(dir_path: impl AsRef<Path>) -> Result<Vec<BackupFile
             }
         })
         .map(|entry| entry.path())
+        //TODO: Make better.
+        .filter(|path| path.extension().map_or(true, |ext| ext != "sha256"))
         .filter_map(|path| {
-            let date = date_from_path(&path)
+            let date = metadata_from_path(&path)
                 .inspect_err(|err| {
                     warn!(
                         "Failed parsing date of file {} with error: {}",

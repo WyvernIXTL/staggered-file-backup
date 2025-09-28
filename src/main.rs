@@ -21,7 +21,7 @@ use crate::{
     file::target_file_name,
     hash::{generate_sha256_file_content, hash_file},
     logging::setup_logging,
-    parsing::dates_from_directory,
+    parsing::metadata_from_directory,
     setup::setup_hooks,
 };
 
@@ -220,7 +220,7 @@ fn main() -> Result<()> {
         info!("Starting cleanup.");
 
         info!("Parsing files of target directory for dates.");
-        let backup_files = dates_from_directory(&target_dir_path)?;
+        let backup_files = metadata_from_directory(&target_dir_path)?;
 
         info!("Determine which files to keep...");
 
@@ -253,7 +253,17 @@ fn main() -> Result<()> {
             .for_each(|file| info!("TRASH: {}", file.path.display()));
 
         let files_to_trash_count = files_to_trash.len();
-        let files_to_trash_paths = files_to_trash.into_iter().map(|file| file.path);
+        let mut files_to_trash_paths: Vec<PathBuf> =
+            files_to_trash.into_iter().map(|file| file.path).collect();
+        let files_to_trash_paths_sum_files: Vec<PathBuf> = files_to_trash_paths
+            .iter()
+            .map(|path| {
+                let mut path_str = path.clone().into_os_string();
+                path_str.push(".sha256");
+                PathBuf::from(path_str)
+            })
+            .collect();
+        files_to_trash_paths.extend_from_slice(&files_to_trash_paths_sum_files);
 
         if files_to_trash_count > 0 {
             info!("Moving files into recycle bin...");

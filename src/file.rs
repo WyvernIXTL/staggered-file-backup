@@ -16,6 +16,8 @@ use color_eyre::{
     eyre::{Context, ContextCompat, Ok, Result},
 };
 
+use crate::{cleanup::BackupFile, parsing::metadata_from_directory};
+
 fn modified_date<P>(file_path: P) -> Result<SystemTime>
 where
     P: AsRef<Path>,
@@ -60,22 +62,29 @@ pub fn target_file_name(
     let mut file_name = OsString::new();
     file_name.push(modified_date.as_ref());
 
-    let mut counter = 0;
-    loop {
-        let mut file_name = file_name.clone();
-        file_name.push(format!("_{:>02}_", counter));
-        file_name.push(base_name.as_ref());
-        if let Some(ext) = extension.as_ref() {
-            file_name.push(".");
-            file_name.push(ext.as_ref());
-        }
+    //TODO: This is terrible.
+    let mut backup_files: Vec<BackupFile> = metadata_from_directory(target_dir.as_ref())?
+        .into_iter()
+        .filter(|file| {
+            file.path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .contains(&modified_date.as_ref())
+        })
+        .collect();
 
-        let target = target_dir.as_ref().join(&file_name);
+    backup_files.sort();
 
-        if !target.try_exists()? {
-            return Ok(file_name);
-        }
-
-        counter += 1;
+    let counter = backup_files
+        .last()
+        .map_or(0, |file| file.metadata.counter + 1);
+    let mut file_name = file_name.clone();
+    file_name.push(format!("_{:>02}_", counter));
+    file_name.push(base_name.as_ref());
+    if let Some(ext) = extension.as_ref() {
+        file_name.push(".");
+        file_name.push(ext.as_ref());
     }
+    Ok(file_name)
 }
