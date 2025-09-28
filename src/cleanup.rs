@@ -236,4 +236,31 @@ mod test {
             ]
         )
     }
+
+    #[test]
+    fn test_files_to_keep_multi() {
+        let files = vec![
+            ((2025, 08, 01), PathBuf::from("a")),
+            ((2025, 09, 01), PathBuf::from("b")),
+            ((2025, 10, 01), PathBuf::from("c")),
+            ((2025, 10, 02), PathBuf::from("e")),
+            ((2025, 10, 01), PathBuf::from("d")),
+            ((2025, 09, 02), PathBuf::from("f")),
+            ((2023, 08, 01), PathBuf::from("g")),
+            ((2025, 08, 02), PathBuf::from("h")),
+        ];
+
+        assert_eq!(
+            identify_files_to_keep(&files, Some(3), Some(4), Some(3), Some(2)).unwrap(),
+            vec![
+                ((2023, 08, 01), PathBuf::from("g")),
+                ((2025, 08, 01), PathBuf::from("a")),
+                ((2025, 09, 01), PathBuf::from("b")),
+                ((2025, 09, 02), PathBuf::from("f")),
+                ((2025, 10, 01), PathBuf::from("c")),
+                ((2025, 10, 01), PathBuf::from("d")),
+                ((2025, 10, 02), PathBuf::from("e")),
+            ]
+        )
+    }
 }
