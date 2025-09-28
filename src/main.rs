@@ -17,11 +17,13 @@ use license_fetcher::read_package_list_from_out_dir;
 use log::{error, info, warn};
 
 use crate::{
+    file::target_file_name,
     hash::{generate_sha256_file_content, hash_file},
     logging::setup_logging,
     setup::setup_hooks,
 };
 
+mod cleanup;
 mod file;
 mod hash;
 mod logging;
@@ -163,14 +165,12 @@ fn main() -> Result<()> {
 
         info!("Target directory: {}", target_dir_path.display());
 
-        let mut target_file = OsString::from(modified_string);
-        target_file.push("_");
-        target_file.push(source_basename);
-
-        if let Some(ext) = extension_option {
-            target_file.push(".");
-            target_file.push(ext);
-        }
+        let target_file = target_file_name(
+            &target_dir_path,
+            &modified_string,
+            &source_basename,
+            extension_option,
+        )?;
 
         info!("Target file: {}", target_file.display());
 

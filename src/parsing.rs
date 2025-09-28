@@ -38,7 +38,7 @@ fn date_from_file_name(file_name: impl AsRef<OsStr>) -> Option<(u32, u32, u32)> 
 
 fn date_from_path(file_path: impl AsRef<Path>) -> Result<(u32, u32, u32)> {
     ensure!(
-        file_path.as_ref().is_dir(),
+        file_path.as_ref().is_file(),
         "Path given to be parsed is not a file."
     );
 

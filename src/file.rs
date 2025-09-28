@@ -5,6 +5,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use std::{
+    ffi::{OsStr, OsString},
     path::Path,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
@@ -12,7 +13,7 @@ use std::{
 use chrono::DateTime;
 use color_eyre::{
     Section,
-    eyre::{Context, ContextCompat, Result},
+    eyre::{Context, ContextCompat, Ok, Result},
 };
 
 fn modified_date<P>(file_path: P) -> Result<SystemTime>
@@ -48,4 +49,33 @@ where
     let duration = unix_from_system_time(modified)?;
     let seconds = i64::try_from(duration.as_secs())?;
     date_string_from_seconds(seconds)
+}
+
+pub fn target_file_name(
+    target_dir: impl AsRef<Path>,
+    modified_date: impl AsRef<str>,
+    base_name: impl AsRef<OsStr>,
+    extension: Option<impl AsRef<OsStr>>,
+) -> Result<OsString> {
+    let mut file_name = OsString::new();
+    file_name.push(modified_date.as_ref());
+
+    let mut counter = 0;
+    loop {
+        let mut file_name = file_name.clone();
+        file_name.push(format!("_{:>02}_", counter));
+        file_name.push(base_name.as_ref());
+        if let Some(ext) = extension.as_ref() {
+            file_name.push(".");
+            file_name.push(ext.as_ref());
+        }
+
+        let target = target_dir.as_ref().join(&file_name);
+
+        if !target.try_exists()? {
+            return Ok(file_name);
+        }
+
+        counter += 1;
+    }
 }
