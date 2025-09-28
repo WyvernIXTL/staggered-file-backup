@@ -2,8 +2,10 @@
 name = "staggered-file-backup"
 description = "An easy and secure staggered file backup solution"
 authors = ["Adam McKellar <dev@mckellar.eu>"]
-version = "0.1.0"
+version = "0.1.0-alpha"
 edition = "2024"
+categories = ["command-line-utilities"]
+keywords = ["backup", "staggered"]
 
 [dependencies]
 chrono = "0.4.42"
@@ -21,3 +23,8 @@ trash = "5.2.3"
 
 [build-dependencies]
 license-fetcher = { version = "0.8.4", features = ["build"] }
+
+[profile.optimized]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
