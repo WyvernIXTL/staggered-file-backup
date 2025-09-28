@@ -8,7 +8,7 @@ use std::fs::{OpenOptions, create_dir_all};
 
 use clap::CommandFactory;
 use color_eyre::eyre::{Result, eyre};
-use log::LevelFilter;
+use log::{LevelFilter, info};
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
 
 use crate::Cli;
@@ -28,7 +28,7 @@ pub fn setup_logging() -> Result<()> {
     let log_file_handle = OpenOptions::new()
         .truncate(true)
         .write(true)
-        .open(log_file)?;
+        .open(&log_file)?;
 
     let _ = CombinedLogger::init(vec![
         (TermLogger::new(
@@ -39,6 +39,8 @@ pub fn setup_logging() -> Result<()> {
         )),
         (WriteLogger::new(LevelFilter::Info, Config::default(), log_file_handle)),
     ]);
+
+    info!("Logs are written to: '{}'", log_file.display());
 
     Ok(())
 }
