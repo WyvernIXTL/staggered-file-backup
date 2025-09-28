@@ -50,7 +50,7 @@ fn date_from_path(file_path: impl AsRef<Path>) -> Result<(u32, u32, u32)> {
     date_from_file_name(file_name).wrap_err("Failed parsing file name to date.")
 }
 
-fn dates_from_directory(dir_path: impl AsRef<Path>) -> Result<Vec<((u32, u32, u32), PathBuf)>> {
+pub fn dates_from_directory(dir_path: impl AsRef<Path>) -> Result<Vec<((u32, u32, u32), PathBuf)>> {
     Ok(std::fs::read_dir(dir_path.as_ref())?
         .filter_map(|dir_entry_result| {
             dir_entry_result

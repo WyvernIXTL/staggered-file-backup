@@ -21,7 +21,7 @@ fn compare_entries(a: &Entry, b: &Entry) -> Ordering {
     }
 }
 
-fn identify_files_to_keep(
+pub fn identify_files_to_keep(
     file_list: &Vec<Entry>,
     keep_latest: Option<u32>,
     keep_daily: Option<u32>,
@@ -118,7 +118,7 @@ fn identify_files_to_keep(
     Ok(keep_dedup)
 }
 
-fn identify_files_to_delete(file_list: Vec<Entry>, files_to_keep: &Vec<Entry>) -> Vec<Entry> {
+pub fn identify_files_to_delete(file_list: Vec<Entry>, files_to_keep: &Vec<Entry>) -> Vec<Entry> {
     file_list
         .into_iter()
         .filter(|file| !files_to_keep.contains(file))
