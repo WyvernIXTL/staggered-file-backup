@@ -4,7 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use std::{cmp::Ordering, collections::HashMap, path::PathBuf};
+use std::{cmp::Ordering, collections::HashMap, ops::Sub, path::PathBuf};
 
 use color_eyre::eyre::{Ok, Result};
 use log::warn;
@@ -41,7 +41,11 @@ pub fn identify_files_to_keep(
 
     if let Some(keep_latest) = keep_latest {
         let keep_latest = usize::try_from(keep_latest)?;
-        let start_index = file_list.len() - keep_latest;
+        let start_index = if file_list.len() >= keep_latest {
+            file_list.len() - keep_latest
+        } else {
+            0
+        };
         keep.extend_from_slice(&file_list[start_index..]);
     }
 

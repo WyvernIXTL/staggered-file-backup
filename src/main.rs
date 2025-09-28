@@ -241,15 +241,29 @@ fn main() -> Result<()> {
         )
         .wrap_err("Failed to determine which files to keep.")?;
 
+        backup_files_to_keep
+            .iter()
+            .for_each(|file| info!("KEEP: {}", file.1.display()));
+
         info!("Determine which files to move into recycle bin...");
         let files_to_trash = identify_files_to_delete(backup_files, &backup_files_to_keep);
+
+        files_to_trash
+            .iter()
+            .for_each(|file| info!("TRASH: {}", file.1.display()));
+
         let files_to_trash_count = files_to_trash.len();
         let files_to_trash_paths = files_to_trash.into_iter().map(|file| file.1);
 
-        info!("Moving files into recycle bin...");
-        trash::delete_all(files_to_trash_paths)?;
+        if files_to_trash_count > 0 {
+            info!("Moving files into recycle bin...");
+            trash::delete_all(files_to_trash_paths)?;
 
-        info!("Moved {} files into recycle bin.", files_to_trash_count);
+            info!("Moved {} files into recycle bin.", files_to_trash_count);
+        } else {
+            info!("No files where determined to be moved into recycle bin.");
+        }
+
         info!("DONE!");
 
         return Ok(());
