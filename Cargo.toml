@@ -2,7 +2,7 @@
 name = "staggered-file-backup"
 description = "An easy and secure staggered file backup solution"
 authors = ["Adam McKellar <dev@mckellar.eu>"]
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.0"
 edition = "2024"
 categories = ["command-line-utilities"]
 keywords = ["backup", "staggered"]
