@@ -118,6 +118,13 @@ fn identify_files_to_keep(
     Ok(keep_dedup)
 }
 
+fn identify_files_to_delete(file_list: Vec<Entry>, files_to_keep: &Vec<Entry>) -> Vec<Entry> {
+    file_list
+        .into_iter()
+        .filter(|file| !files_to_keep.contains(file))
+        .collect()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -262,5 +269,36 @@ mod test {
                 ((2025, 10, 02), PathBuf::from("e")),
             ]
         )
+    }
+
+    #[test]
+    fn test_files_to_delete() {
+        let files = vec![
+            ((2025, 08, 01), PathBuf::from("a")),
+            ((2025, 09, 01), PathBuf::from("b")),
+            ((2025, 10, 01), PathBuf::from("c")),
+            ((2025, 10, 02), PathBuf::from("e")),
+            ((2025, 10, 01), PathBuf::from("d")),
+            ((2025, 09, 02), PathBuf::from("f")),
+            ((2023, 08, 01), PathBuf::from("g")),
+            ((2025, 08, 02), PathBuf::from("h")),
+        ];
+
+        let keep = vec![
+            ((2023, 08, 01), PathBuf::from("g")),
+            ((2025, 08, 01), PathBuf::from("a")),
+            ((2025, 10, 01), PathBuf::from("d")),
+            ((2025, 10, 02), PathBuf::from("e")),
+        ];
+
+        assert_eq!(
+            identify_files_to_delete(files, &keep),
+            vec![
+                ((2025, 09, 01), PathBuf::from("b")),
+                ((2025, 10, 01), PathBuf::from("c")),
+                ((2025, 09, 02), PathBuf::from("f")),
+                ((2025, 08, 02), PathBuf::from("h")),
+            ]
+        );
     }
 }
