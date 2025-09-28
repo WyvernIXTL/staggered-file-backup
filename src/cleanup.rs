@@ -65,7 +65,57 @@ fn identify_files_to_keep(
         }
     }
 
-    todo!()
+    if let Some(keep_monthly) = keep_monthly {
+        let mut filtered = vec![];
+        filtered.push(file_list.first().unwrap());
+        for file in file_list.iter() {
+            if filtered.last().unwrap().0.1 != file.0.1 || filtered.last().unwrap().0.2 != file.0.2
+            {
+                filtered.push(file);
+            }
+        }
+
+        let mut count = 0;
+        while let Some(file) = filtered.pop() {
+            if count == keep_monthly {
+                break;
+            }
+
+            keep.push(file.clone());
+            count += 1;
+        }
+    }
+
+    if let Some(keep_yearly) = keep_yearly {
+        let mut filtered = vec![];
+        filtered.push(file_list.first().unwrap());
+        for file in file_list.iter() {
+            if filtered.last().unwrap().0.1 != file.0.1 {
+                filtered.push(file);
+            }
+        }
+
+        let mut count = 0;
+        while let Some(file) = filtered.pop() {
+            if count == keep_yearly {
+                break;
+            }
+
+            keep.push(file.clone());
+            count += 1;
+        }
+    }
+
+    let mut keep_dedup = vec![];
+    for file in keep.into_iter() {
+        if !keep_dedup.contains(&file) {
+            keep_dedup.push(file);
+        }
+    }
+
+    keep_dedup.sort_by(compare_entries);
+
+    Ok(keep_dedup)
 }
 
 #[cfg(test)]
