@@ -1,0 +1,43 @@
+name: Release
+
+permissions:
+  contents: write
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  compile:
+    continue-on-error: true
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            triple: x86_64-unknown-linux-musl
+          - os: ubuntu-22.04-arm
+            triple: aarch64-unknown-linux-musl
+          - os: macos-15-intel
+            triple: x86_64-apple-darwin
+          - os: macos-26
+            triple: aarch64-apple-darwin
+          - os: windows-latest
+            triple: x86_64-pc-windows-msvc
+          - os: windows-11-arm
+            triple: aarch64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - run: rustup toolchain install stable --profile minimal --target ${{ matrix.triple }}
+      - run: rustup component add llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo pgo instrument build -- --profile optimized --target ${{ matrix.triple }}
+      - run: pwsh ./scripts/collect-pgo-profiles.ps1 ${{ matrix.triple }}
+      - run: cargo pgo optimize build -- --profile optimized --target ${{ matrix.triple }}
+      - run: pwsh ./scripts/archive-release.ps1 ${{ matrix.triple }}
+      - name: Upload Binary
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./target/staggered-file-backup*
