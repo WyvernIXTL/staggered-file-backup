@@ -8,7 +8,7 @@ on:
     types: [published]
 
 jobs:
-  compile-portable:
+  compile-pgo-optimized-portable:
     continue-on-error: true
     strategy:
       matrix:
@@ -41,10 +41,41 @@ jobs:
         run: cargo binstall -y cargo-pgo
       - name: Cache
         uses: Swatinem/rust-cache@v2
-      - run: cargo pgo instrument build -- --profile optimized --target ${{ matrix.triple }}
-      - run: pwsh ./scripts/collect-pgo-profiles.ps1 ${{ matrix.triple }}
-      - run: cargo pgo optimize build -- --profile optimized --target ${{ matrix.triple }}
-      - run: pwsh ./scripts/archive-release.ps1 ${{ matrix.triple }}
+      - name: Build instrumented Binary
+        run: cargo pgo instrument build -- --profile optimized --target ${{ matrix.triple }}
+      - name: Run instrumented Binary
+        run: pwsh ./scripts/collect-pgo-profiles.ps1 ${{ matrix.triple }}
+      - name: Build PGO optimized Binary
+        run: cargo pgo optimize build -- --profile optimized --target ${{ matrix.triple }}
+      - name: Archive Release
+        run: pwsh ./scripts/archive-release.ps1 ${{ matrix.triple }}
+      - name: Upload Binary
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./target/staggered-file-backup*
+
+  compile-portable:
+    continue-on-error: true
+    strategy:
+      matrix:
+        include:
+          - os: windows-11-arm
+            triple: aarch64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Install latest Rust
+        run: rustup toolchain install stable --profile minimal
+      - name: Add Target
+        run: rustup target add ${{ matrix.triple }}
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+      - name: Build Binary
+        run: cargo build --profile optimized --target ${{ matrix.triple }}
+      - name: Archive Release
+        run: pwsh ./scripts/archive-release.ps1 ${{ matrix.triple }}
       - name: Upload Binary
         uses: softprops/action-gh-release@v2
         with:
