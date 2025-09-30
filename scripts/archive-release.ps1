@@ -9,7 +9,7 @@ $bin = "staggered-file-backup"
 
 $CargoToml = Get-Content ./Cargo.toml -Raw
 
-$regexPattern = '^version\s?\=\s?\"(\d{1,2}\.\d{1,2}\.\d{1,2}.*?)\"$'
+$regexPattern = 'version\s?\=\s?\"(.*?)\"'
 $regexOptions = [System.Text.RegularExpressions.RegexOptions]::Multiline
 $regex = New-Object System.Text.RegularExpressions.Regex($regexPattern, $regexOptions)
 
@@ -23,6 +23,8 @@ if ($match.Groups.Count -eq 0) {
 }
 
 $version = $match.Groups[1].Value
+
+Write-Host "Version: $version"
 
 $ArchiveName = "$bin-v$version-$TargetTriple"
 
