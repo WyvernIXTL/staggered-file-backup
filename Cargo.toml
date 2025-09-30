@@ -31,3 +31,7 @@ license-fetcher = { version = "0.8.4", features = ["build"] }
 inherits = "release"
 lto = "fat"
 codegen-units = 1
+
+[package.metadata.packager]
+identifier = "com.github.wyvernixtl.staggered-file-backup"
+out_dir = "./target/"
