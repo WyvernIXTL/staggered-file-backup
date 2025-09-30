@@ -8,7 +8,7 @@ on:
     types: [published]
 
 jobs:
-  compile:
+  compile-portable:
     continue-on-error: true
     strategy:
       matrix:
@@ -29,19 +29,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - run: rustup toolchain install stable --profile minimal
-      - run: rustup target add ${{ matrix.triple }}
-      - run: rustup component add llvm-tools-preview
-      - uses: Swatinem/rust-cache@v2
-      - uses: cargo-bins/cargo-binstall@main
-      - run: cargo binstall -y cargo-pgo
-      - run: cargo binstall -y cargo-wix
-        if: ${{ matrix.os == 'windows-latest' }}
+      - name: Install latest Rust
+        run: rustup toolchain install stable --profile minimal
+      - name: Add Target
+        run: rustup target add ${{ matrix.triple }}
+      - name: Add llvm-preview for PGO
+        run: rustup component add llvm-tools-preview
+      - name: Install Cargo Binstall
+        uses: cargo-bins/cargo-binstall@main
+      - name: Install Cargo PGO
+        run: cargo binstall -y cargo-pgo
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
       - run: cargo pgo instrument build -- --profile optimized --target ${{ matrix.triple }}
       - run: pwsh ./scripts/collect-pgo-profiles.ps1 ${{ matrix.triple }}
       - run: cargo pgo optimize build -- --profile optimized --target ${{ matrix.triple }}
-      - run: cargo wix --profile optimized --target ${{ matrix.triple }}
-        if: ${{ matrix.os == 'windows-latest' }}
       - run: pwsh ./scripts/archive-release.ps1 ${{ matrix.triple }}
       - name: Upload Binary
         uses: softprops/action-gh-release@v2
