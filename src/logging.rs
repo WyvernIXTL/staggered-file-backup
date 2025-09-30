@@ -28,6 +28,7 @@ pub fn setup_logging() -> Result<()> {
     let log_file_handle = OpenOptions::new()
         .truncate(true)
         .write(true)
+        .create(true)
         .open(&log_file)?;
 
     let _ = CombinedLogger::init(vec![
