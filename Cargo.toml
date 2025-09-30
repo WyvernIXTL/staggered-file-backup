@@ -35,3 +35,7 @@ codegen-units = 1
 [package.metadata.packager]
 identifier = "com.github.wyvernixtl.staggered-file-backup"
 out_dir = "./target/"
+icons = [
+    "./icon/Icon-exported-256px.png",
+    "./icon/icon.ico"
+]

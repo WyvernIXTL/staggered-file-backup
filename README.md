@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./icon/Icon-exported-no-crop-p1.svg" height=256 />
+
 # `staggered-file-backup`
 
 **An easy and secure staggered file backup solution**
