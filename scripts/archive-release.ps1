@@ -29,5 +29,5 @@ $ArchiveName = "$bin-v$version-$TargetTriple"
 if ($IsWindows) {
     7z a ./target/$ArchiveName.7z ./README.md ./LICENSE ./target/$TargetTriple/optimized/$bin.exe ./CHANGELOG.md
 } else {
-    tar cfJ ./target/$ArchiveName.xz ./README.md ./LICENSE ./target/$TargetTriple/optimized/$bin.exe ./CHANGELOG.md
+    tar cfJ ./target/$ArchiveName.tar.xz ./README.md ./LICENSE ./target/$TargetTriple/optimized/$bin ./CHANGELOG.md
 }
