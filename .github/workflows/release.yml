@@ -50,7 +50,27 @@ jobs:
       - name: Archive Release
         run: pwsh ./scripts/archive-release.ps1 ${{ matrix.triple }}
       - name: Run Cargo Packager
-        run: cargo packager --profile optimized --target ${{ matrix.triple }}
+        run: |
+          cargo packager --profile optimized --target ${{ matrix.triple }} -f nsis
+          cargo packager --profile optimized --target ${{ matrix.triple }} -f wix
+        shell: pwsh
+        continue-on-error: true
+        if: ${{ runner.os == 'Windows' }}
+      - name: Run Cargo Packager
+        run: |
+          cargo packager --profile optimized --target ${{ matrix.triple }} -f pacman
+          cargo packager --profile optimized --target ${{ matrix.triple }} -f deb
+          cargo packager --profile optimized --target ${{ matrix.triple }} -f appimage
+        shell: pwsh
+        continue-on-error: true
+        if: ${{ runner.os == 'Linux' }}
+      - name: Run Cargo Packager
+        run: |
+          cargo packager --profile optimized --target ${{ matrix.triple }} -f dmg
+          cargo packager --profile optimized --target ${{ matrix.triple }} -f app
+        shell: pwsh
+        continue-on-error: true
+        if: ${{ runner.os == 'macOS' }}
       - name: Upload Binary
         uses: softprops/action-gh-release@v2
         with:
@@ -81,7 +101,12 @@ jobs:
       - name: Archive Release
         run: pwsh ./scripts/archive-release.ps1 ${{ matrix.triple }}
       - name: Run Cargo Packager
-        run: cargo packager --profile optimized --target ${{ matrix.triple }}
+        run: |
+          cargo packager --profile optimized --target ${{ matrix.triple }} -f nsis
+          cargo packager --profile optimized --target ${{ matrix.triple }} -f wix
+        shell: pwsh
+        continue-on-error: true
+        if: ${{ runner.os == 'Windows' }}
       - name: Upload Binary
         uses: softprops/action-gh-release@v2
         with:
