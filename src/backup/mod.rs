@@ -20,6 +20,7 @@ use crate::backup::{
 };
 
 pub mod cleanup;
+mod db;
 pub mod file;
 pub mod hash;
 pub mod parsing;
