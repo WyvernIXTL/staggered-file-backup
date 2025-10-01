@@ -16,7 +16,7 @@ use color_eyre::{
     eyre::{Context, ContextCompat, Ok, Result},
 };
 
-use crate::{cleanup::BackupFile, parsing::metadata_from_directory};
+use crate::{backup::cleanup::BackupFile, backup::parsing::metadata_from_directory};
 
 fn modified_date<P>(file_path: P) -> Result<SystemTime>
 where

@@ -12,7 +12,7 @@ use color_eyre::eyre::{ContextCompat, Ok, ensure};
 use log::{error, warn};
 use regex::Regex;
 
-use crate::cleanup::BackupFile;
+use crate::backup::cleanup::BackupFile;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct FileNameMetadata {

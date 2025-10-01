@@ -9,7 +9,7 @@ use std::{cmp::Ordering, path::PathBuf};
 use color_eyre::eyre::{Ok, Result};
 use log::warn;
 
-use crate::parsing::FileNameMetadata;
+use crate::backup::parsing::FileNameMetadata;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct BackupFile {
@@ -147,7 +147,7 @@ pub fn identify_files_to_delete(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::parsing::FileNameMetadata;
+    use crate::backup::parsing::FileNameMetadata;
 
     #[test]
     fn test_files_to_keep_latest() {
