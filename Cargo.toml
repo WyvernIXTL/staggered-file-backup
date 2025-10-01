@@ -2,7 +2,7 @@
 name = "staggered-file-backup"
 description = "An easy and secure staggered file backup solution"
 authors = ["Adam McKellar <dev@mckellar.eu>"]
-version = "0.1.0-alpha.2"
+version = "0.1.0-alpha.3"
 edition = "2024"
 repository = "https://github.com/WyvernIXTL/staggered-file-backup"
 categories = ["command-line-utilities"]
