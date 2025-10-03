@@ -19,6 +19,7 @@ use crate::backup::{
     parsing::metadata_from_directory,
 };
 
+mod backup;
 pub mod cleanup;
 mod db;
 pub mod file;
