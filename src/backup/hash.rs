@@ -4,40 +4,25 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use std::{
-    fs::OpenOptions,
-    io::{BufReader, Read},
-    path::Path,
-};
+use std::{ffi::OsStr, fs::File, io};
 
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{Context, Result};
+use sha2::{Digest, Sha256};
 
-pub fn hash_file<P>(path: P) -> Result<String>
-where
-    P: AsRef<Path>,
-{
-    let file = OpenOptions::new().read(true).open(path.as_ref())?;
-    let mut reader = BufReader::new(file);
-    let mut hasher = hmac_sha256::Hash::new();
+pub fn hash_file(file: &mut File) -> Result<String> {
+    let mut hasher = Sha256::new();
 
-    let mut buffer = [0; 8192];
-
-    loop {
-        let bytes_read = reader.read(&mut buffer)?;
-        if bytes_read == 0 {
-            break;
-        }
-        hasher.update(&buffer[..bytes_read]);
-    }
+    io::copy(file, &mut hasher).wrap_err("Failed to hash file.")?;
 
     let hash = hasher.finalize();
+
     Ok(hex::encode_upper(hash))
 }
 
-pub fn generate_sha256_file_content<S, S2>(hash: S2, file_name: S) -> String
+pub fn generate_sha256_file_content<S, S2>(hash: S, file_name: S2) -> String
 where
     S: AsRef<str>,
-    S2: AsRef<str>,
+    S2: AsRef<OsStr>,
 {
-    format!("{} *{}\n", hash.as_ref(), file_name.as_ref())
+    format!("{} *{}\n", hash.as_ref(), file_name.as_ref().display())
 }
