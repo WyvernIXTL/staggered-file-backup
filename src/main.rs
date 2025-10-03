@@ -15,6 +15,8 @@ use crate::{logging::setup_logging, setup::setup_hooks};
 
 mod backup;
 mod logging;
+mod model;
+mod schema;
 mod setup;
 
 fn parse_str_to_source_pathbuf(s: &str) -> std::result::Result<PathBuf, String> {

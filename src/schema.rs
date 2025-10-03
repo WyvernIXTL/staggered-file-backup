@@ -4,9 +4,9 @@ diesel::table! {
     backup_files (uuid) {
         uuid -> Binary,
         relative_path -> Binary,
-        keep_yearly -> Integer,
-        keep_monthly -> Integer,
-        keep_daily -> Integer,
-        keep_latest -> Integer,
+        keep_yearly -> Bool,
+        keep_monthly -> Bool,
+        keep_daily -> Bool,
+        keep_latest -> Bool,
     }
 }

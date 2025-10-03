@@ -29,7 +29,7 @@ fn connect_db(backup_dir: impl AsRef<Path>) -> Result<SqliteConnection> {
     .wrap_err("Failed to connect to backup tracking database located in backup folder.")
 }
 
-fn run_migrations(conn: &mut impl MigrationHarness<Sqlite>) -> Result<()> {
+fn run_pending_migrations(conn: &mut impl MigrationHarness<Sqlite>) -> Result<()> {
     conn.run_pending_migrations(MIGRATIONS)
         .map_err(|err| eyre!(err))
         .wrap_err("Failed to run database migrations.")?;
