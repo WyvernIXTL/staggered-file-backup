@@ -37,7 +37,15 @@ pub struct BackupFile {
 #[derive(Debug, Clone, AsExpression, FromSqlRow, Serialize, Deserialize)]
 #[diesel(sql_type = Binary)]
 pub struct UuidSQL {
-    uuid: Uuid,
+    pub uuid: Uuid,
+}
+
+impl UuidSQL {
+    pub fn new() -> Self {
+        Self {
+            uuid: Uuid::now_v7(),
+        }
+    }
 }
 
 impl Deref for UuidSQL {
@@ -80,7 +88,7 @@ impl ToSql<Binary, Sqlite> for UuidSQL {
 #[derive(Debug, Clone, AsExpression, FromSqlRow, Serialize, Deserialize)]
 #[diesel(sql_type = Binary)]
 pub struct PathBufSql {
-    path: PathBuf,
+    pub path: PathBuf,
 }
 
 impl Deref for PathBufSql {
